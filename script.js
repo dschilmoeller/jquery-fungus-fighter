@@ -10,6 +10,8 @@ $(document).ready(onReady);
 let playerAP = 100
 let fungusAmongUs = 100
 
+// do not set yet - makes the dang function start immediately.
+let regenID
 
 function onReady() {
     
@@ -29,6 +31,8 @@ function onReady() {
 
 function attack(attack) {
     // console.log(`You're attacking with: `, attack);
+    
+    
     // use scepter!
     if (attack === 'sceptre') {
         // console.log(`You're attacking with: `, attack);
@@ -64,49 +68,99 @@ function attack(attack) {
         console.log('fungus hp is', fungusAmongUs);
         renderAPHP();
     } 
+    // reset fungus hp regen so it doesn't double up.
+    clearInterval(regenID)
 }
-
-// function to kill fungus
-    
-    // 🧠 Remember
-    // - Handle events that ->
-    // - Updates state which is ->
-    // - Rendered to the DOM
-
 
 function renderAPHP() {
     console.log('rendering AP/HP');
+
     // replace AP value
     let APOnDOM = $('#ap-text-id');
     console.log('render: player AP as', playerAP)
     console.log('render: fungus HP as:', fungusAmongUs)
     APOnDOM.empty();
     APOnDOM.append( playerAP, ' AP' );
-    // check AP Value
-    if ( playerAP < 1 ) {
+
+    // render AP bar
+    $('#ap-meter').val(playerAP);
+    
+    // check AP Value for 0/negative
+    if ( playerAP < 1 && fungusAmongUs > 0 ) {
         console.log('Yer outta AP!');
-        playerAP = 0; // this doesn't seem to be working. 
-        $(.)
+        playerAP = 0;
+        // fungus jumping time. Disable attack buttons.
+        $('.freaky-fungus').removeClass('walk')
+        $('.freaky-fungus').addClass('jump')
+        $('.attack-btn').prop('disabled', true)
+        // replace AP value with 0
+        APOnDOM.empty();
+        APOnDOM.append( playerAP, ' AP' );
     }
+    
+    
     // replace HP value
     let HPOnDOM = $('#hp-text-id');
     HPOnDOM.empty();
     HPOnDOM.append( fungusAmongUs, ' HP' );
 
-    // check HP value
-    if ( fungusAmongUs < 1 ) {
+    // render HP Bar
+    $('#hp-meter').val(fungusAmongUs);
+    // check HP value for 0/negative
+    
+    
+    if ( fungusAmongUs < 1 && playerAP > 0) {
         console.log('Fungus is down!')
-        fungusAmongUs = 0; // this doesn't seem to be working.
-        // change walk class to dead class
-        $('.freaky-fungus').addClass('dead')
+        fungusAmongUs = 0; 
+        // fungus dying time. Disable attack buttons.
+        $('.freaky-fungus').removeClass('walk')
+        $('.freaky-fungus').addClass('dead');
+        $('.attack-btn').prop('disabled', true)
+        // replace HP value with 0
+        HPOnDOM.empty();
+        HPOnDOM.append( fungusAmongUs, ' HP' );
     }
+    
+    // Hey Dale, is that mushroom getting bigger?
+    // create variable
+    // 
+    //let regenID = setInterval(fungoidGrowth, 1000);
+    
+    //deploy variable.
+    if (fungusAmongUs < 51) {
+        regenID = setInterval(fungoidGrowth, 1000);
+    }
+
+    if (fungusAmongUs < 1 && playerAP < 1 ) {
+        clearInterval(regenID)
+
+        fungusAmongUs = 0; 
+        playerAP = 0;
+        
+        APOnDOM.empty();
+        APOnDOM.append( playerAP, ' AP' );
+
+        HPOnDOM.empty();
+        HPOnDOM.append( fungusAmongUs, ' HP' );
+        
+        $('.freaky-fungus').removeClass('walk')
+        $('.freaky-fungus').addClass('dead');
+        $('.attack-btn').prop('disabled', true)
+
+        alert("You've won, but at what cost!?");
+    }
+    
 }
 
-// Arcane Scepter
-// AP Cost: 12 / HP Damage: 14
-// Entangle
-// AP Cost: 23 / HP Damage: 9
-// Dragon Blade
-// AP Cost: 38 / HP Damage: 47
-// Star Fire
-// AP Cost: 33 / HP Damage: 25
+function fungoidGrowth() {
+    console.log('the fungus is getting bigger!!')
+    fungusAmongUs += 1;
+    let HPOnDOM = $('#hp-text-id');
+    HPOnDOM.empty();
+    HPOnDOM.append( fungusAmongUs, ' HP' );
+}
+
+// HP Regeneration
+// Scientist have recently revealed that fungi are tougher under harsh conditions.
+// If the Freaky Fungus' HP falls below 50, have it regenerate 1 HP every second.
+// HINT: Look up the built in setInterval() function!
